@@ -39,7 +39,7 @@ jobs:
             -strict
             -summary
             -ignore-filename-pattern '\.example$'
-            k8s/*.yaml
+            k8s
 
       - name: Scan repository for secrets
         uses: gitleaks/gitleaks-action@v2
