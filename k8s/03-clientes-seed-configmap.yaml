@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clientes-seed
+  namespace: desafio-k8s
+data:
+  09-clientes-seed.sql: |
+    CREATE TABLE IF NOT EXISTS clientes (
+      id serial PRIMARY KEY,
+      nome text NOT NULL,
+      email text NOT NULL UNIQUE,
+      ativo boolean DEFAULT true,
+      criado_em timestamp DEFAULT now()
+    );
+
+    INSERT INTO clientes (nome, email, ativo)
+    VALUES
+      ('Ana Silva', 'ana@email.com', true),
+      ('Bruno Costa', 'bruno@email.com', true),
+      ('Carla Souza', 'carla@email.com', false)
+    ON CONFLICT (email) DO NOTHING;
+
+    NOTIFY pgrst, 'reload schema';
+
+    SELECT id, nome, email, ativo, criado_em FROM clientes ORDER BY id;
