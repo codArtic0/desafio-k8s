@@ -1,0 +1,101 @@
+name: CD
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to production
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.31.4
+
+      - name: Configure kubeconfig
+        shell: bash
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+        run: |
+          test -n "$KUBE_CONFIG_DATA"
+          mkdir -p "$RUNNER_TEMP/kube"
+          printf '%s' "$KUBE_CONFIG_DATA" | base64 --decode > "$RUNNER_TEMP/kube/config"
+          chmod 600 "$RUNNER_TEMP/kube/config"
+          echo "KUBECONFIG=$RUNNER_TEMP/kube/config" >> "$GITHUB_ENV"
+          kubectl cluster-info
+
+      - name: Validate deployment secrets
+        shell: bash
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          PGRST_DB_URI: ${{ secrets.PGRST_DB_URI }}
+          PGRST_JWT_SECRET: ${{ secrets.PGRST_JWT_SECRET }}
+        run: |
+          test -n "$POSTGRES_PASSWORD"
+          test -n "$PGRST_DB_URI"
+          test -n "$PGRST_JWT_SECRET"
+
+      - name: Apply database Secret
+        shell: bash
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          PGRST_DB_URI: ${{ secrets.PGRST_DB_URI }}
+          PGRST_JWT_SECRET: ${{ secrets.PGRST_JWT_SECRET }}
+        run: |
+          kubectl create namespace desafio-k8s --dry-run=client -o yaml | kubectl apply -f -
+          kubectl create secret generic postgres-secret \
+            --namespace desafio-k8s \
+            --from-literal=POSTGRES_DB=appdb \
+            --from-literal=POSTGRES_USER=postgres \
+            --from-literal=POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
+            --from-literal=PGRST_DB_URI="$PGRST_DB_URI" \
+            --from-literal=PGRST_JWT_SECRET="$PGRST_JWT_SECRET" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Apply Kubernetes resources
+        shell: bash
+        run: |
+          for manifest in k8s/00-namespace.yaml k8s/02-postgres-configmap.yaml k8s/03-postgres-pvc.yaml k8s/04-postgres-deployment.yaml k8s/05-postgres-service.yaml k8s/06-pgrest-deployment.yaml k8s/07-pgrest-hpa.yaml k8s/08-exposition-service.yaml; do
+            kubectl apply -f "$manifest"
+          done
+
+      - name: Wait for rollouts
+        run: |
+          kubectl rollout status deployment/postgres -n desafio-k8s --timeout=5m
+          kubectl rollout status deployment/pgrest -n desafio-k8s --timeout=5m
+
+      - name: Apply database seed
+        shell: bash
+        run: |
+          kubectl exec -i -n desafio-k8s deployment/postgres -- \
+            psql -U postgres -d appdb < k8s/09-clientes-seed.sql
+
+      - name: Smoke test API
+        shell: bash
+        run: |
+          kubectl port-forward -n desafio-k8s service/pgrest-service 8080:80 > "$RUNNER_TEMP/port-forward.log" 2>&1 &
+          port_forward_pid=$!
+          trap 'kill "$port_forward_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent --show-error http://127.0.0.1:8080/clientes > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat "$RUNNER_TEMP/port-forward.log"
+          exit 1
