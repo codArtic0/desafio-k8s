@@ -68,7 +68,7 @@ jobs:
       - name: Apply Kubernetes resources
         shell: bash
         run: |
-          for manifest in k8s/00-namespace.yaml k8s/02-postgres-configmap.yaml k8s/03-postgres-pvc.yaml k8s/04-postgres-deployment.yaml k8s/05-postgres-service.yaml k8s/06-pgrest-deployment.yaml k8s/07-pgrest-hpa.yaml k8s/08-exposition-service.yaml; do
+          for manifest in k8s/00-namespace.yaml k8s/02-postgres-configmap.yaml k8s/03-clientes-seed-configmap.yaml k8s/03-postgres-pvc.yaml k8s/04-postgres-deployment.yaml k8s/05-postgres-service.yaml k8s/06-pgrest-deployment.yaml k8s/07-pgrest-hpa.yaml k8s/08-exposition-service.yaml; do
             kubectl apply -f "$manifest"
           done
 
@@ -76,12 +76,6 @@ jobs:
         run: |
           kubectl rollout status deployment/postgres -n desafio-k8s --timeout=5m
           kubectl rollout status deployment/pgrest -n desafio-k8s --timeout=5m
-
-      - name: Apply database seed
-        shell: bash
-        run: |
-          kubectl exec -i -n desafio-k8s deployment/postgres -- \
-            psql -U postgres -d appdb < k8s/09-clientes-seed.sql
 
       - name: Smoke test API
         shell: bash
