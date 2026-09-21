@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate Kubernetes manifests
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check whitespace errors
+        run: git diff --check
+
+      - name: Reject real Secret manifest
+        run: |
+          if [ -f k8s/01-postgres-secret.yaml ]; then
+            echo "k8s/01-postgres-secret.yaml must not be committed. Use the .example file." >&2
+            exit 1
+          fi
+
+      - name: Reject mutable image tags
+        run: |
+          if grep -REn 'image:.*:(latest|stable|main|master)[[:space:]]*$' k8s --include='*.yaml'; then
+            echo "Every container image must use a fixed version tag." >&2
+            exit 1
+          fi
+
+      - name: Validate YAML with Kubeconform
+        uses: docker://ghcr.io/yannh/kubeconform:v0.6.7
+        with:
+          args: >-
+            -strict
+            -summary
+            -ignore-filename-pattern '\.example$'
+            k8s
+
+      - name: Scan repository for secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
