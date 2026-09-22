@@ -75,10 +75,12 @@ kubectl get pods -l app=pgrest -n desafio-k8s
 
 Registre:
 
-![](../assets/evidencias/nivel6/create.webp)
-![](../assets/evidencias/nivel6/scale.webp)
-![](../assets/evidencias/nivel6/get.webp)
-![](../assets/evidencias/nivel6/describe.webp)
+![Criação de Deployment e Service](../assets/evidencias/nivel6/create.webp)
+![Scale de recursos](../assets/evidencias/nivel6/scale.webp)
+![Get de Pods e Endpoints](../assets/evidencias/nivel6/get.webp)
+![Describe](../assets/evidencias/nivel6/describes.png)
+
+*Obs: Não consegui colocar o describe como WEBP pois corrompia o arquivo, tentarei daqui até o final do prazo!*
 
 ## Reflexão proposta
 
