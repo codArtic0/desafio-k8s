@@ -34,16 +34,6 @@ kubectl get events -n desafio-k8s --sort-by=.lastTimestamp
 kubectl logs meu-pod -n desafio-k8s
 ```
 
-## Evidências
-
-![Manifesto do Namespace](../assets/evidencias/nivel1/code.webp)
-
-![Execução do Pod](../assets/evidencias/nivel1/termsnap.webp)
-
-![Detalhes e logs do Pod](../assets/evidencias/nivel1/logs.webp)
-
-![Exclusão do Pod](../assets/evidencias/nivel1/delete.webp)
-
 ## Exclusão e conclusão
 
 Após a inspeção, o Pod foi excluído:
@@ -52,6 +42,20 @@ Após a inspeção, o Pod foi excluído:
 kubectl delete pod meu-pod -n desafio-k8s
 kubectl get pod meu-pod -n desafio-k8s
 ```
+
+## Evidências
+
+![Manifesto do Namespace](../assets/evidencias/nivel1/code.webp)
+
+![Execução do Namespace](../assets/evidencias/nivel1/termsnap.webp)
+
+![Execução do Pod](../assets/evidencias/nivel1/create.webp)
+
+![Detalhes e logs do Pod](../assets/evidencias/nivel1/logs.webp)
+
+![Exclusão do Pod](../assets/evidencias/nivel1/delete.webp)
+
+## Reflexão proposta
 
 O Pod **não volta sozinho**. Como ele foi criado diretamente, não existe um
 controlador responsável por comparar o estado atual com um estado desejado e
