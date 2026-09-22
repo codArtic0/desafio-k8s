@@ -21,6 +21,58 @@
 
 </div>
 
+## Conteúdo
+
+- [Visão geral](#visão-geral)
+- [Componentes](#componentes)
+- [Fluxo de requisições](#fluxo-de-requisições)
+- [Pré-requisitos](#pré-requisitos)
+- [Configuração](#configuração)
+- [Deploy](#deploy)
+- [Testar a API](#testar-a-api)
+- [Persistência](#persistência)
+- [Escalonamento](#escalonamento)
+- [CI/CD](#cicd)
+- [Limpeza](#limpeza)
+- [Documentação dos níveis](#documentação-dos-níveis)
+
+## Estrutura do projeto
+
+```text
+.
+├── assets/
+│   ├── Diagrama.png
+│   └── evidencias/
+│       ├── nivel1/
+│       ├── nivel2/
+│       ├── nivel3/
+│       ├── nivel4/
+│       ├── nivel5/
+│       ├── nivel6/
+│       └── nivel7/
+├── docs/
+│   ├── nivel1-namespace.md
+│   ├── nivel2-postgres.md
+│   ├── nivel3-configuracao-segredos.md
+│   ├── nivel4-api-postgrest.md
+│   ├── nivel5-exposicao-persistencia.md
+│   ├── nivel6-health-checks-escala.md
+│   └── nivel7-escalonamento-automatico.md
+├── k8s/
+│   ├── 00-namespace.yaml
+│   ├── 01-postgres-secret.yaml
+│   ├── 01-postgres-secret.yaml.example
+│   ├── 02-postgres-configmap.yaml
+│   ├── 03-clientes-seed-configmap.yaml
+│   ├── 04-postgres-pvc.yaml
+│   ├── 05-postgres-deployment.yaml
+│   ├── 06-postgres-service.yaml
+│   ├── 07-pgrest-deployment.yaml
+│   ├── 08-pgrest-hpa.yaml
+│   └── 09-exposition-service.yaml
+└── README.md
+```
+
 ## Visão geral
 
 Este projeto provisiona uma stack Kubernetes enxuta, orientada a produção, com armazenamento persistente, configuração externa, health checks, inicialização automática do banco e escalonamento horizontal.
@@ -54,18 +106,6 @@ postgres:5432
   v
 PostgreSQL + postgres-pvc
 ```
-
-## Conteúdo
-
-- [Pré-requisitos](#pré-requisitos)
-- [Configuração](#configuração)
-- [Deploy](#deploy)
-- [Testar a API](#testar-a-api)
-- [Persistência](#persistência)
-- [Escalonamento](#escalonamento)
-- [CI/CD](#cicd)
-- [Estrutura do projeto](#estrutura-do-projeto)
-- [Limpeza](#limpeza)
 
 ## Pré-requisitos
 
@@ -189,22 +229,19 @@ PGRST_JWT_SECRET
 
 O workflow de CD configura o Secret, aplica os recursos, aguarda os rollouts e executa um smoke test em `/clientes`.
 
-## Estrutura do projeto
+## Documentação dos níveis
 
-```text
-k8s/
-├── 00-namespace.yaml
-├── 01-postgres-secret.yaml.example
-├── 02-postgres-configmap.yaml
-├── 03-clientes-seed-configmap.yaml
-├── 03-postgres-pvc.yaml
-├── 04-postgres-pvc.yaml
-├── 05-postgres-deployment.yaml
-├── 06-postgres-service.yaml
-├── 07-pgrest-deployment.yaml
-├── 08-pgrest-hpa.yaml
-└── 09-exposition-service.yaml
-```
+Cada etapa do desafio possui uma documentação própria em [`docs/`](docs/):
+
+| Nível | Tema | Documentação |
+| --- | --- | --- |
+| 1 | Namespace | [nivel1-namespace.md](docs/nivel1-namespace.md) |
+| 2 | PostgreSQL | [nivel2-postgres.md](docs/nivel2-postgres.md) |
+| 3 | Configuração e segredos | [nivel3-configuracao-segredos.md](docs/nivel3-configuracao-segredos.md) |
+| 4 | API PostgREST | [nivel4-api-postgrest.md](docs/nivel4-api-postgrest.md) |
+| 5 | Exposição e persistência | [nivel5-exposicao-persistencia.md](docs/nivel5-exposicao-persistencia.md) |
+| 6 | Health checks e escala | [nivel6-health-checks-escala.md](docs/nivel6-health-checks-escala.md) |
+| 7 | Escalonamento automático | [nivel7-escalonamento-automatico.md](docs/nivel7-escalonamento-automatico.md) |
 
 ## Limpeza
 
