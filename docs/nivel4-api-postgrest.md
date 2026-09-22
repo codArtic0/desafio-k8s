@@ -66,11 +66,11 @@ schema `public` e expôs a tabela por HTTP.
 
 ## Evidências
 
-![](../assets/evidencias/nivel4/create.webp)
-![](../assets/evidencias/nivel4/getDescribe.webp)
-![](../assets/evidencias/nivel4/portForward.webp)
-![](../assets/evidencias/nivel4/curl.webp)
-![](../assets/evidencias/nivel4/curl2.webp)
+![Criação do Deployment](../assets/evidencias/nivel4/create.webp)
+![Gets e Describes dos recursos](../assets/evidencias/nivel4/getDescribe.webp)
+![Port-forward](../assets/evidencias/nivel4/portForward.webp)
+![Curl da API](../assets/evidencias/nivel4/curl.webp)
+![Curl da API na rota de Clientes](../assets/evidencias/nivel4/curl2.webp)
 
 ## Reflexão proposta
 
